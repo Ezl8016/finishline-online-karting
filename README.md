@@ -7,9 +7,20 @@ Race the Tidal Turns, Cadet 206 Practice and Karting Coastal layouts in the
 rental R25, the LO206, the Vintage Kart or the KA100, against the clock or
 against your friends online.
 
-**Play in your browser:** https://finishline-online-karting.netlify.app
+**Play in your browser:** https://ezl8016.github.io/finishline-online-karting/
 
-## Download the app
+## Get it on your Dock or Start menu (easiest)
+
+Open the game in your browser, then:
+
+- **Mac (Safari):** **File → Add to Dock**.
+- **Windows / Chromebook (Edge or Chrome):** the **Install** button at the
+  right of the address bar (or menu → **Apps → Install this site as an app**).
+
+It gets its own icon and window, with no security warnings, and always runs
+the latest version.
+
+## Or download the app
 
 Get the newest version from **[Releases](../../releases/latest)**:
 
@@ -26,9 +37,10 @@ the game, so you only download it once.
 The app isn't signed with a paid Apple or Microsoft certificate yet, so the
 first time you open it:
 
-- **Mac:** right-click (or Control-click) the app in Applications, choose
-  **Open**, then **Open** again. If macOS still refuses, go to **System
-  Settings → Privacy & Security** and click **Open Anyway**.
+- **Mac:** if macOS offers to move it to the Trash, click **Done** instead.
+  Then open **System Settings → Privacy & Security**, scroll down and click
+  **Open Anyway** next to Finishline Online Karting. (Or, in Terminal:
+  `xattr -dr com.apple.quarantine "/Applications/Finishline Online Karting.app"`.)
 - **Windows:** click **More info**, then **Run anyway**.
 
 After that it opens normally.
