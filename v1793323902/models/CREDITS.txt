@@ -1,0 +1,50 @@
+Bundled kart models
+-------------------
+"TbKart Go-Kart" (TB Kart R25 rental) -> models/r25-kart.glb  [Rental Kart R25]
+  "TBKART R25 Go- Kart" by Matty._. - CC BY 4.0
+  https://sketchfab.com/3d-models/93b2dc2bce9f4a14a93c7b92a0a5fa30
+  The game adds Gridline Online Karting logo decals to its side panels.
+
+"Go-Kart" (sprint chassis) -> models/lo206-kart.glb  [Vintage Kart]
+  "Go Kart" by GRIP420 - CC BY-NC-ND 4.0 (non-commercial, no derivatives)
+  https://sketchfab.com/3d-models/go-kart-db54b705c0e546229fb43c55d7e7ad3f
+  tools/brand_karts.py replaces its sponsor logos with the Gridline logo
+  (models/lo206-body.jpg). NoDerivatives means this modified version may
+  not be shared publicly. lo206-paint-mask.png / lo206-trim-mask.png mark the blue
+  body panels and orange rims in its textures for the Garage's paint options.
+
+Both converted from OBJ with tools/obj2glb.py; otherwise used unmodified
+apart from runtime scaling and separating the wheels so they spin and steer.
+
+"Race car driver (low poly)" -> models/driver.glb  [the driver]
+  "Race Car Driver - Low Poly" by tomkart - CC BY 4.0
+  https://sketchfab.com/3d-models/0fedfae53537473ba2ee3d9b722e0c66
+  Exported to GLB with Blender. Its suit came with Alpinestars branding; tools/brand_suit.py
+  replaces it with the Gridline Online Karting logo (models/driver-suit.png,
+  which the game loads over the model's own suit texture). The gloves still
+  carry Alpinestars branding, and the textures
+  include a real-looking face (hidden under the helmet). driver-suit-mask.png
+  and driver-gloves-mask.png mark the red parts for the Garage's colours.
+
+"Honda Inspired Racing Go-Kart" -> models/honda-kart.glb  [LO206]
+  Source: ~/Downloads/honda-inspired-racing-go-kart (source/Textur.fbx and
+  textures/), converted with tools/fbx2glb.py (Blender; textures scaled to
+  1024 px). Author and license not recorded: check before sharing the game.
+  tools/brand_honda.py paints out its Honda badges and lettering and puts the
+  Gridline Online Karting logo in their place (models/honda-body.jpg), and
+  writes the masks that let the red bodywork take the Garage's paint colour
+  (honda-body-mask.png, honda-under-mask.png). The 16 on the nose and on
+  both sidepods shows the driver's race number.
+
+"Go Kart Model" (KA100) -> models/ka100-kart.glb  [KA100]
+  Source: ~/Downloads/ka100-go-kart-iame (Go Kart Model.blend), exported to
+  GLB with Blender. Author and license not recorded: check before sharing the
+  game. tools/brand_ka100.py replaces the "@jesse_karts_" sticker on the
+  sidepods with the Gridline Online Karting logo (ka100-sidepod.png) and
+  writes the masks that let the green stripes take the Garage's paint colour.
+
+"Racing Kit" barriers by Kenney (www.kenney.nl) - CC0
+  -> models/props/barrierRed.glb, barrierWhite.glb (license in KENNEY-LICENSE.txt)
+
+Pit equipment (models/pit/): Poly Haven, CC0 (no credit required) - metal_tool_chest, Barrel_02, metal_trash_can, small_oil_can_01, cardboard_box_01. https://polyhaven.com
+Clubhouse furniture (models/club/): Poly Haven, CC0 (no credit required) - SchoolChair_01, modern_arm_chair_01, coffee_table_round_01, potted_plant_02, modern_ceiling_lamp_01, steel_frame_shelves_01, desk_lamp_arm_01. Floor: Poly Haven wood_floor texture (CC0).

@@ -1,0 +1,14 @@
+{
+ "size": {
+  "plaster": 2.0,
+  "metal": 2.7,
+  "shingles": 8.0,
+  "floor": 1.7
+ },
+ "source": {
+  "plaster": "painted_plaster_wall",
+  "metal": "corrugated_iron_02",
+  "shingles": "grey_roof_01",
+  "floor": "wood_floor"
+ }
+}

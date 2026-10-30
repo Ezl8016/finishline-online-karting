@@ -1,0 +1,43 @@
+Music
+
+Menu (house)
+  if-you-dont-love-me.mp3  "If You Don't Love Me" by Snabisch - CC BY 4.0  (converted WAV -> MP3)
+                           https://opengameart.org/content/if-you-don%C2%B4t-love-me
+  chill-house.mp3          "Chill House" by Aurec                https://pixabay.com/music/electronic-chill-house-579115/
+  deep-house-sunset.mp3    "Deep House Sunset" by sunset-house-grooves  https://pixabay.com/music/soft-house-deep-house-sunset-538759/
+  sunset-house-classic.mp3 "Sunset House Classic" by sunset-house-grooves  https://pixabay.com/music/soft-house-sunset-house-classic-538760/
+  luxury-life.mp3          "Luxury Life" by Kulakovka            https://pixabay.com/music/house-luxury-life-618587/
+  chill-deep-house.mp3     "Chill Deep House" by Kulakovka       https://pixabay.com/music/upbeat-chill-deep-house-295875/
+
+Racing (EDM)
+  we-own-the-night.mp3     "We Own the Night" by jakob_welik     https://pixabay.com/music/dance-we-own-the-night-463855/
+  falling-into-you.mp3     "Falling Into You (After the Drop)" by jakob_welik  https://pixabay.com/music/dance-falling-into-you-after-the-drop-463854/
+  neon-skies.mp3           "Neon Skies" by jakob_welik           https://pixabay.com/music/dance-neon-skies-463849/
+  forever.mp3              "Forever | EDM Trance Vibes" by diogodasilvasimoes  https://pixabay.com/music/edm-forever-edm-trance-vibes-489439/
+  unity.mp3                "Unity | MainStage Dark EDM" by diogodasilvasimoes  https://pixabay.com/music/edm-unity-mainstage-dark-edm-489435/
+  epic-fast-bitwise-edm.mp3 "Epic Fast Bitwise Edm" by AllWorldMusic  https://pixabay.com/music/beats-epic-fast-bitwise-edm-276879/
+  energy-edm.mp3           "Energy EDM" by The_Mountain          https://pixabay.com/music/future-bass-energy-edm-155588/
+  edm-fun.mp3              "EDM Fun" by The_Mountain             https://pixabay.com/music/beats-edm-fun-153644/
+  hard-edm.mp3             "Hard EDM" by Kulakovka               https://pixabay.com/music/upbeat-hard-edm-281129/
+  neon-love.mp3            "Neon Love (Cyberpunk EDM) INSTRUMENTAL" by SoundUniverseStudio  https://pixabay.com/music/dubstep-neon-love-cyberpunk-edm-instrumental-226464/
+  heavy-dubstep-bass-drop-edm.mp3 "Heavy Dubstep Bass Drop EDM" by alex-morgan  https://pixabay.com/music/dubstep-heavy-dubstep-bass-drop-edm-530942/
+  acid-edm.mp3             "Acid EDM" by Kulakovka               https://pixabay.com/music/upbeat-acid-edm-281151/
+  edm-house.mp3            "EDM - House" by DJDoblina            https://pixabay.com/music/electronic-edm-house-510192/
+  edm.mp3                  "EDM" by Ashika006                    https://pixabay.com/music/electronic-edm-512189/
+
+Pixabay tracks are under the Pixabay Content License (free, commercial use
+allowed, no credit required; not to be redistributed on their own).
+Download them into ~/Downloads and run: python3 tools/import_music.py
+
+In the clubhouse, and on track with Settings' "Real artist music" (src/music.js
+LOUNGE), used with the artists' permission (not free to reuse: ask them):
+  mr-morning-drive.mp3     "Mr. Morning Drive" by Adam Holt (Kind of Blues, 2019)
+  dont-give-up-on-me-baby.mp3 "Don't Give Up on Me Baby" by Adam Holt (Kind of Blues, 2019)
+  give-the-dog-a-bone.mp3  "Give the Dog a Bone" by Adam Holt (Kind of Blues, 2019)
+  the-story-must-go-on.mp3 "The Story Must Go On" by Adam Holt (Kind of Blues, 2019)
+  local-band.m4a           "Local Band" by The Marlo Boys
+  gonna-be-alright.mp3     "Gonna Be Alright" by The Marlo Boys
+  kate.mp3                 "Kate" by The Marlo Boys
+  no-more-excuses.mp3      "No More Excuses" by The Marlo Boys
+  technicolor.mp3          "Technicolor" by The Marlo Boys
+  without-your-love.mp3    "Without Your Love" by The Marlo Boys

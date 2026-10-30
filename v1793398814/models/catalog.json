@@ -1,0 +1,284 @@
+[
+  {
+    "id": "r25",
+    "name": "Rental Kart R25",
+    "note": "TB Kart R25 rental: bodywork and rims take custom colours",
+    "file": "models/r25-kart.glb",
+    "yawDegrees": 180,
+    "author": "Matty._.",
+    "license": "CC BY 4.0",
+    "paintMaterials": [
+      "Cube0031Mtl",
+      "Support1Mtl"
+    ],
+    "trimMaterials": [
+      "MesheshondaTestwheellr1Mtl"
+    ],
+    "engine": "gx390",
+    "sideLogos": {
+      "url": "assets/logo.png",
+      "material": "Cube0031Mtl",
+      "width": 0.26,
+      "z": -0.16,
+      "y": 0.28
+    },
+    "url": "https://sketchfab.com/3d-models/93b2dc2bce9f4a14a93c7b92a0a5fa30",
+    "numbers": {
+      "materials": [
+        "Cube0031Mtl"
+      ],
+      "plates": [
+        {
+          "from": [
+            0.02,
+            2.0,
+            -0.62
+          ],
+          "dir": [
+            0,
+            -1,
+            0
+          ],
+          "normal": [
+            0,
+            0.94,
+            -0.34
+          ],
+          "width": 0.14
+        }
+      ]
+    },
+    "footprint": [
+      1.47,
+      2.1,
+      -0.14
+    ]
+  },
+  {
+    "id": "honda",
+    "name": "LO206",
+    "note": "Briggs & Stratton LO206 \u00b7 204 cc \u00b7 6,100 rpm digital limiter \u00b7 tuned, ~18 hp, ~60 mph \u00b7 sprint chassis",
+    "file": "models/honda-kart.glb",
+    "yawDegrees": 180,
+    "author": "Honda Inspired Racing Go-Kart (Downloads)",
+    "license": "license not recorded",
+    "engine": "lo206",
+    "chassisKg": 76,
+    "dragArea": 0.55,
+    "textures": {
+      "standardSurface3": "models/honda-body.jpg"
+    },
+    "paintMasks": [
+      {
+        "material": "standardSurface3",
+        "url": "models/honda-body-mask.png",
+        "slot": "paint",
+        "ref": 0.1667,
+        "refMap": true
+      },
+      {
+        "material": "standardSurface5",
+        "url": "models/honda-under-mask.png",
+        "slot": "paint",
+        "ref": 0.1261
+      }
+    ],
+    "numberBoxes": [
+      {
+        "materials": [
+          "standardSurface3"
+        ],
+        "bg": "#000000",
+        "fg": "#e3161e",
+        "italic": false,
+        "boxes": [
+          [
+            433,
+            995,
+            539,
+            1101
+          ]
+        ]
+      },
+      {
+        "materials": [
+          "standardSurface3"
+        ],
+        "bg": "#464646",
+        "fg": "#141414",
+        "italic": false,
+        "boxes": [
+          [
+            1028,
+            1185,
+            1092,
+            1296,
+            -90
+          ],
+          [
+            1750,
+            1158,
+            1812,
+            1264,
+            90
+          ]
+        ]
+      }
+    ],
+    "footprint": [
+      1.42,
+      1.88,
+      -0.16
+    ]
+  },
+  {
+    "id": "lo206",
+    "name": "Vintage Kart",
+    "note": "Vintage sprint kart \u00b7 Briggs & Stratton LO206 \u00b7 204 cc \u00b7 6,100 rpm digital limiter \u00b7 ~18 hp, ~60 mph",
+    "file": "models/lo206-kart.glb",
+    "yawDegrees": 180,
+    "author": "GRIP420",
+    "license": "CC BY-NC-ND 4.0",
+    "engine": "lo206",
+    "chassisKg": 70,
+    "paintMasks": [
+      {
+        "material": "phongE1SG",
+        "url": "models/lo206-paint-mask.png",
+        "slot": "paint",
+        "ref": 0.0561
+      },
+      {
+        "material": "phongE2SG",
+        "url": "models/lo206-trim-mask.png",
+        "slot": "trim",
+        "ref": 0.4637
+      }
+    ],
+    "dragArea": 0.55,
+    "textures": {
+      "phongE1SG": "models/lo206-body.jpg"
+    },
+    "url": "https://sketchfab.com/3d-models/go-kart-db54b705c0e546229fb43c55d7e7ad3f",
+    "numberBoxes": [
+      {
+        "materials": [
+          "phongE1SG"
+        ],
+        "bg": "#ffffff",
+        "fg": "#141414",
+        "italic": true,
+        "boxes": [
+          [
+            156,
+            1195,
+            194,
+            1232
+          ],
+          [
+            540,
+            1195,
+            578,
+            1232
+          ],
+          [
+            330,
+            1651,
+            426,
+            1707
+          ],
+          [
+            713,
+            1863,
+            751,
+            1900
+          ],
+          [
+            1080,
+            1863,
+            1118,
+            1900
+          ],
+          [
+            1269,
+            934,
+            1307,
+            971
+          ]
+        ]
+      }
+    ],
+    "footprint": [
+      1.28,
+      1.73,
+      -0.19
+    ]
+  },
+  {
+    "id": "ka100",
+    "name": "KA100",
+    "note": "IAME KA100 \u00b7 100 cc two-stroke \u00b7 16,000 rpm \u00b7 race-tuned, ~75 mph \u00b7 sprint chassis \u00b7 soft racing tyres",
+    "file": "models/ka100-kart.glb",
+    "yawDegrees": 0,
+    "author": "KA100 Go-Kart (Downloads)",
+    "license": "license not recorded",
+    "engine": "ka100",
+    "chassisKg": 81,
+    "dragArea": 0.5,
+    "textures": {
+      "Material.006": "models/ka100-sidepod.png"
+    },
+    "paintMasks": [
+      {
+        "material": "Material.006",
+        "url": "models/ka100-sidepod-mask.png",
+        "slot": "paint",
+        "ref": 0.55,
+        "refMap": true
+      },
+      {
+        "material": "Material.004",
+        "url": "models/ka100-nose-mask.png",
+        "slot": "paint",
+        "ref": 0.2112
+      },
+      {
+        "material": "Material.052",
+        "url": "models/ka100-nose-mask.png",
+        "slot": "paint",
+        "ref": 0.2112
+      }
+    ],
+    "trimMaterials": [
+      "Material.013",
+      "Material.014",
+      "Material.015",
+      "Material.016"
+    ],
+    "numberBoxes": [
+      {
+        "materials": [
+          "Material.004",
+          "Material.052"
+        ],
+        "bg": "#ffff00",
+        "fg": "#000000",
+        "italic": false,
+        "boxes": [
+          [
+            510,
+            87,
+            675,
+            245
+          ]
+        ]
+      }
+    ],
+    "tyreGrip": 1.1,
+    "footprint": [
+      1.69,
+      2.1,
+      -0.18
+    ]
+  }
+]

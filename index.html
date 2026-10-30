@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="v1793398814/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Gridline Online Karting — Tidal Turns</title>
+<link rel="stylesheet" href="src/style.css">
+<link rel="icon" type="image/png" href="assets/icon-64.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="manifest" href="assets/app.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Gridline">
+<meta name="theme-color" content="#d42a2a">
+<script>
+// Show JavaScript errors on screen and send them to the local server's log
+// (tools/browser_errors.log), so a broken button can be diagnosed.
+(() => {
+  const report = (msg) => {
+    const ua = navigator.userAgent.replace(/^Mozilla\/5\.0 /, '');
+    const line = `[${new Date().toISOString()}] ${msg} | ${ua}`;
+    try { navigator.sendBeacon ? navigator.sendBeacon('/__log', line) : fetch('/__log', { method: 'POST', body: line }); } catch { /* offline */ }
+    const el = document.getElementById('loadState');
+    if (el) { el.textContent = 'Error: ' + msg.split('\n')[0]; el.style.color = '#d42a2a'; }
+  };
+  addEventListener('error', (e) => report(`${e.message} at ${e.filename?.split('/').pop()}:${e.lineno}:${e.colno}\n${e.error?.stack || ''}`));
+  addEventListener('unhandledrejection', (e) => report(`Unhandled: ${e.reason?.message || e.reason}\n${e.reason?.stack || ''}`));
+  const ce = console.error;
+  console.error = (...a) => { report('console.error: ' + a.map(x => x?.stack || x?.message || String(x)).join(' ')); ce.apply(console, a); };
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/",
+    "rapier": "./vendor/rapier/rapier.es.js"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud" class="hidden">
+  <!-- timing: lap, time, sectors, last and best -->
+  <div id="timing" class="hp">
+    <div class="hpHead"><span id="lapNo">OUT LAP</span><span id="lapOf"></span></div>
+    <div class="tTime" id="lapTime">--:--.---</div>
+    <div class="tSectors"><span id="s1"><i>S1</i><b></b></span><span id="s2"><i>S2</i><b></b></span><span id="s3"><i>S3</i><b></b></span></div>
+    <div class="tRow"><span>LAST</span><b id="lastLap">--:--.---</b></div>
+    <div class="tRow"><span>BEST</span><b id="bestLap">--:--.---</b></div>
+    <div id="delta" class="tDelta"></div>
+    <div id="invalid" class="tWarn hidden">TRACK LIMITS · LAP INVALID</div>
+  </div>
+
+  <!-- online: qualifying and race order -->
+  <div id="raceBox" class="hp hidden">
+    <div class="hpHead"><span id="rbTitle">RACE</span><span id="rbLap"></span></div>
+    <ol id="rbList"></ol>
+  </div>
+
+  <div id="mapBox" class="hp">
+    <div class="hpHead"><span id="mapName">TIDAL TURNS</span><span id="mapDir"></span></div>
+    <canvas id="minimap" width="220" height="220"></canvas>
+  </div>
+  <div id="roomTag" class="chip hidden"></div>
+
+  <div id="draftTag">SLIPSTREAM</div>
+  <div id="dash" class="hp">
+    <div class="dTop">
+      <div id="speed"><span id="speedVal">0</span><small id="speedUnit">MPH</small></div>
+      <div class="dRpm"><b id="rpmVal">0</b><small>RPM</small></div>
+    </div>
+    <div id="rpmBar"></div>
+    <div class="dPedals">
+      <span>THR</span><div class="pBar"><div id="thrFill"></div></div>
+      <span>BRK</span><div class="pBar brake"><div id="brkFill"></div></div>
+    </div>
+    <div id="steerBar"><div id="steerDot"></div></div>
+  </div>
+
+  <div id="telemetry" class="hp">
+    <div class="hpHead"><span>TELEMETRY</span><span id="gVal">0.00 G</span></div>
+    <div class="telBody">
+      <canvas id="gmeter" width="120" height="120"></canvas>
+      <div class="tyreMap">
+        <div class="chassis"></div>
+        <div id="tFL" class="tyre"></div><div id="tFR" class="tyre"></div>
+        <div id="tRL" class="tyre"></div><div id="tRR" class="tyre"></div>
+      </div>
+    </div>
+    <div id="tyreTxt" class="telState"></div>
+  </div>
+
+  <!-- phones and tablets: steer on the left, pedals on the right -->
+  <div id="touch">
+    <div class="tBtns">
+      <button data-a="camera" aria-label="Camera">CAM</button>
+      <button data-a="reset" aria-label="Reset to track">RESET</button>
+      <button data-a="turnaround" aria-label="Turn around">TURN</button>
+      <button data-a="pause" aria-label="Menu">MENU</button>
+      <button id="tTalk" class="hidden" aria-label="Hold to talk">TALK</button>
+    </div>
+    <div id="tSteer"><div class="ring"><i class="knob"></i></div><small>DRAG TO STEER</small></div>
+    <div class="tPedals"><button id="tBrake">BRAKE</button><button id="tGas">GAS</button></div>
+  </div>
+
+  <!-- stewarding: a camera for each driver, on the number keys -->
+  <div id="stewardBar" class="hp hidden">
+    <div class="hpHead"><span>STEWARD · CAMERAS</span><span>0–8 PICK · C ANGLE</span></div>
+    <div id="sbTiles"></div>
+    <div id="sbFlags" class="flagBtns"><button data-v="auto">AUTO <kbd>A</kbd></button><button data-v="green"><i></i>GREEN <kbd>G</kbd></button><button data-v="yellow"><i></i>YELLOW <kbd>Y</kbd></button><button data-v="red"><i></i>RED <kbd>R</kbd></button><button data-v="white"><i></i>WHITE <kbd>W</kbd></button><button data-v="chequered"><i></i>CHEQUERED <kbd>X</kbd></button></div>
+  </div>
+  <div id="stewardTags"></div>
+
+  <div id="blueFlag" class="hidden"><i></i><b>BLUE FLAG</b><small>A faster kart is lapping you: let it by</small></div>
+  <div id="camLabel" class="chip"></div>
+  <div id="voiceChip" class="chip hidden"></div>
+  <div id="chatBox" class="hidden">
+    <ol id="chatLog"></ol>
+    <form id="chatForm" class="hidden"><input id="chatInput" type="text" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Say something… (Enter to send, Esc to close)"></form>
+    <button id="chatOpen" type="button">CHAT <small>Enter</small></button>
+  </div>
+
+  <div id="lights" class="hidden">
+    <small id="lightsSub">RACE START</small>
+    <div class="gantry"><div class="pod"><i></i><i></i></div><div class="pod"><i></i><i></i></div><div class="pod"><i></i><i></i></div><div class="pod"><i></i><i></i></div><div class="pod"><i></i><i></i></div></div>
+    <b id="lightsText"></b>
+  </div>
+  <div id="banner" class="hidden"><small id="bnSub"></small><b id="bnMain"></b></div>
+  <div id="toasts"></div>
+  <div id="attrib" class="small">Imagery © Esri, Maxar, Earthstar Geographics · Buildings © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors ·
+    3D models (recoloured and rebranded with the Gridline logo): <a href="https://sketchfab.com/3d-models/93b2dc2bce9f4a14a93c7b92a0a5fa30" target="_blank" rel="noopener">"TBKART R25 Go- Kart"</a> by Matty._. (CC BY 4.0),
+    <a href="https://sketchfab.com/3d-models/go-kart-db54b705c0e546229fb43c55d7e7ad3f" target="_blank" rel="noopener">"Go Kart"</a> by GRIP420 (CC BY-NC-ND 4.0),
+    <a href="https://sketchfab.com/3d-models/0fedfae53537473ba2ee3d9b722e0c66" target="_blank" rel="noopener">"Race Car Driver - Low Poly"</a> by tomkart (CC BY 4.0) ·
+    <a href="assets/music/CREDITS.txt" target="_blank" rel="noopener">Music credits</a><span id="modelCredit" hidden></span></div>
+</div>
+
+<!-- ============================================================ HOME -->
+<section id="pgHome" class="page ui home">
+  <div class="homeInner">
+    <img class="logo" src="assets/logo-light.png" alt="Gridline Online Karting">
+    <nav class="homeNav">
+      <button id="playBtn" class="btn primary huge" disabled>PLAY</button>
+      <button class="btn" id="multiBtn" data-go="multi">MULTIPLAYER</button>
+      <button class="btn" data-go="garage">GARAGE</button>
+      <button class="btn" data-go="board">FASTEST DRIVERS</button>
+      <button class="btn" data-go="shop">SHOP</button>
+      <button class="btn" data-go="settings">SETTINGS</button>
+    </nav>
+    <div id="acctBar" class="acctBar hidden"><span id="acctText"></span><button class="mini" id="acctBtn">Sign in</button></div>
+    <div id="homeInfo" class="homeInfo"></div>
+    <div id="loadState">Loading…</div>
+  </div>
+</section>
+
+<!-- ============================================================ MULTIPLAYER -->
+<section id="pgProfile" class="page ui hidden">
+  <header class="pageHead"><button class="back" id="pfBack">‹ Back</button><h2 id="pfName">DRIVER</h2></header>
+  <div class="sheet">
+    <div class="podiumWrap pfPodium"><canvas id="pfPodium"></canvas></div>
+    <p class="small" id="pfSub"></p>
+    <div id="pfStats" class="pfStats"></div>
+    <div class="secHead"><span>BEST LAPS</span></div>
+    <ul id="pfBests" class="pfBests"></ul>
+    <div class="secHead"><span id="pfAchHead">ACHIEVEMENTS</span></div>
+    <div id="pfAch" class="pfAch"></div>
+  </div>
+</section>
+
+<!-- ============================================================ SHOP -->
+<section id="pgShop" class="page ui hidden">
+  <header class="pageHead"><button class="back" data-go="home">‹ Back</button><h2>SHOP</h2></header>
+  <div class="sheet">
+    <div class="shBal"><div><b id="shBal">0</b><span>POINTS</span></div><small id="shEarned"></small></div>
+    <div class="secHead"><span id="shMonth">THIS MONTH</span><span class="val" id="shReset"></span></div>
+    <p class="small">Two themed sets each month, each a kart livery, a helmet and a suit that go together, and the artists' music, always in. What you buy is yours for good: wear it from the Garage.</p>
+    <div id="shSets"></div>
+    <div class="secHead"><span>EARNING POINTS</span></div>
+    <ul class="shEarn" id="shEarn"></ul>
+    <p class="small" id="shNote"></p>
+  </div>
+</section>
+
+<section id="pgMulti" class="page ui hidden">
+  <header class="pageHead"><button class="back" data-go="home">‹ Back</button><h2>MULTIPLAYER</h2></header>
+  <div class="sheet">
+    <div id="champPanel" class="champPanel"></div>
+    <div class="secHead"><span>RACE THE AI</span></div>
+    <p class="small">Offline, no account needed: your own server with computer drivers in the same kart as you. Drive with them in practice, then press <b>Esc</b> to start qualifying or a race, turn on a championship, or pick the weather. To race the AI with friends, add AI drivers to your online server from its <b>Esc</b> menu.</p>
+    <form id="aiForm" class="formGrid">
+      <label>Track <select id="aiTrack"></select></label>
+      <label>Opponents
+        <span class="seg" id="aiCount"><button type="button" data-v="3">3</button><button type="button" data-v="5" class="on">5</button><button type="button" data-v="7">7</button><button type="button" data-v="10">10</button></span></label>
+      <label>Difficulty
+        <span class="seg" id="aiLevel"><button type="button" data-v="easy">EASY</button><button type="button" data-v="medium" class="on">MEDIUM</button><button type="button" data-v="hard">HARD</button></span></label>
+      <button class="btn primary" type="submit">RACE THE AI</button>
+    </form>
+    <p class="small err" id="aiErr"></p>
+
+    <div id="mpSignedOut" class="hidden">
+      <p>Sign in to race other drivers online. Your driver name is what everyone sees, and your laps count on Fastest Drivers.</p>
+      <button class="btn primary" id="mpSignIn">SIGN IN</button>
+    </div>
+    <div id="mpOffline" class="hidden"><p>Online play needs the game's online accounts set up (see the README).</p></div>
+    <div id="mpBody">
+      <div class="secHead"><span>PUBLIC SERVERS</span><button class="mini" id="mpRefresh">Refresh</button></div>
+      <ul id="mpList" class="mpList"></ul>
+
+      <div class="secHead"><span>JOIN A PRIVATE SERVER</span></div>
+      <form id="mpJoinForm" class="mpRow">
+        <input id="mpCode" type="text" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false">
+        <button class="btn primary" type="submit">JOIN</button>
+      </form>
+
+      <div class="secHead"><span>CREATE A SERVER</span></div>
+      <form id="mpCreateForm" class="formGrid">
+        <label>Server name <input id="mpName" type="text" maxlength="30" spellcheck="false"></label>
+        <label>Track <select id="mpTrack"></select></label>
+        <label>Kart <select id="mpKart"></select></label>
+        <label>Who can join
+          <span class="seg" id="mpVis"><button type="button" data-v="public" class="on">PUBLIC</button><button type="button" data-v="private">PRIVATE</button></span></label>
+        <p class="small" id="mpVisNote">Public servers are listed above for everyone. Private servers are hidden: friends join with the code you get.</p>
+        <button class="btn primary" type="submit" id="mpCreate">CREATE SERVER</button>
+      </form>
+      <p class="small acctErr" id="mpErr"></p>
+
+      <!-- admins only -->
+      <div id="mpAdmin" class="adminBox hidden">
+        <div class="secHead"><span>ADMIN · CHAMPIONSHIP</span></div>
+        <p class="small" id="adChampNote">Only you can change race times. Times are in your computer's time zone.</p>
+        <ul id="adChamp" class="adChamp"></ul>
+        <div class="secHead"><span>ADMIN · ALL SERVERS</span><button class="mini" id="adRefresh">Refresh</button></div>
+        <ul id="adServers" class="mpList"></ul>
+        <div class="secHead"><span>ADMIN · ANNOUNCEMENT</span></div>
+        <form id="adAnnounceForm" class="adRow">
+          <input id="adAnnounce" type="text" maxlength="140" placeholder="A message for everyone online (shown as a banner)" autocomplete="off">
+          <button class="btn primary" type="submit">SEND</button>
+        </form>
+        <div class="secHead"><span>ADMIN · BANS</span></div>
+        <form id="adBanForm" class="adRow">
+          <input id="adBanName" type="text" maxlength="20" placeholder="Driver name" autocomplete="off" spellcheck="false">
+          <select id="adBanFor"><option value="1">1 day</option><option value="7" selected>1 week</option><option value="30">30 days</option><option value="">For good</option></select>
+          <input id="adBanWhy" type="text" maxlength="200" placeholder="Reason (optional)" autocomplete="off">
+          <button class="btn" type="submit">BAN</button>
+        </form>
+        <ul id="adBans" class="mpList"></ul>
+        <p class="small acctErr" id="adErr"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ GARAGE -->
+<section id="pgGarage" class="page ui garage hidden">
+  <header class="pageHead"><button class="back" data-go="home">‹ Back</button><h2>GARAGE</h2></header>
+  <p class="garageHint">Drag to turn · scroll to zoom</p>
+  <aside class="gPanel">
+    <nav class="tabs"><button data-tab="kart" class="on">KART</button><button data-tab="driver">DRIVER</button><button data-tab="music">MUSIC</button></nav>
+
+    <div id="tabKart" class="tabBody">
+      <div id="garage">
+        <div class="secHead"><span>MODEL</span>
+          <span class="garageBtns">
+            <button class="mini" id="turnKart" title="Only if this 3D model loads facing backwards. To turn your kart around on track, press F.">Faces backwards?</button>
+            <label class="mini" title="Load any kart .glb from your computer">Import .glb…<input type="file" id="importKart" accept=".glb,.gltf" hidden></label>
+          </span>
+        </div>
+        <div id="kartList"></div>
+        <p id="optionalHint" class="small hidden">Optional, more realistic kart: download <a target="_blank" rel="noopener"></a>
+          (free Sketchfab account, glTF Binary) and save it as <code></code>. You can also drag any .glb onto this window.</p>
+      </div>
+      <div class="secHead"><span>PAINT</span></div>
+      <div class="formGrid">
+        <label class="chk"><input type="checkbox" id="kPaintOn"> Custom paint <input type="color" id="kPaint"></label>
+        <label class="chk"><input type="checkbox" id="kTrimOn"> Frame &amp; trim <input type="color" id="kTrim"></label>
+        <label>Finish <select id="kFinish"></select></label>
+      </div>
+      <div class="secHead"><span>LIVERY</span><span class="garageBtns"><button class="mini" id="liveryBrowse" type="button">Browse liveries</button><button class="mini" id="kRandom" type="button">Random</button></span></div>
+      <div class="formGrid">
+        <button class="pickNow" id="liveryNow" type="button"><img alt=""><span><b></b><small>Tap to see every livery on your kart</small></span></button>
+        <label>Design colour <input type="color" id="kLivery2"></label>
+        <p class="small">Your race number goes on the kart's number plates. Change it with your helmet in the <b>DRIVER</b> tab.</p>
+      </div>
+      <p id="paintNote" class="small"></p>
+      <div class="secHead"><span>HANDLING</span><span id="balanceVal" class="val"></span></div>
+      <div class="slider"><small>Understeer</small><input id="balance" type="range" min="-3" max="3" step="1"><small>Oversteer</small></div>
+    </div>
+
+    <div id="tabDriver" class="tabBody hidden">
+      <div class="secHead"><span>DRIVER</span></div>
+      <div class="formGrid">
+        <label class="wide">Name (shown on Fastest Drivers) <input id="driverName" type="text" maxlength="20" spellcheck="false" autocomplete="off" placeholder="Your name"></label>
+      </div>
+      <div class="secHead"><span>WEIGHT</span><span id="weightVal" class="val"></span></div>
+      <div class="slider"><small>90 lb</small><input id="weight" type="range" min="90" max="300" step="5"><small>300 lb</small></div>
+      <div id="helmetBox">
+        <div class="secHead"><span>HELMET</span>
+          <span class="garageBtns"><button class="mini" id="hRandom">Random</button><button class="mini" id="hReset">Reset</button></span>
+        </div>
+        <div class="pickPair">
+          <button class="pickNow" id="helmetNow" type="button"><img alt=""><span><b></b><small>Browse helmets</small></span></button>
+          <button class="pickNow" id="visorNow" type="button"><img alt=""><span><b></b><small>Browse visors</small></span></button>
+        </div>
+        <div class="helmetGrid">
+          <label>Finish <select id="hFinish"></select></label>
+          <label>Number <input id="hNumber" type="text" maxlength="3" spellcheck="false" autocomplete="off"></label>
+          <label>Main <input id="hPrimary" type="color"></label>
+          <label>Second <input id="hSecondary" type="color"></label>
+          <label>Accent <input id="hAccent" type="color"></label>
+        </div>
+        <div class="secHead"><span>HAT</span><button class="mini" id="hatBrowse" type="button">Browse hats</button></div>
+        <button class="pickNow" id="hatNow" type="button"><img alt=""><span><b></b><small>Tap to see every hat on your driver</small></span></button>
+        <div class="helmetGrid">
+          <label>Hat colour <input id="hHatColor" type="color"></label>
+          <label class="chk hatMatch"><input id="hHatMatch" type="checkbox"> Match helmet</label>
+        </div>
+        <div class="secHead"><span>SUIT</span><button class="mini" id="suitBrowse" type="button">Browse suits</button></div>
+        <button class="pickNow" id="suitNow" type="button"><img alt=""><span><b></b><small>Tap to see every suit on your driver</small></span></button>
+        <div class="helmetGrid">
+          <label>Main <input id="hSuit" type="color"></label>
+          <label>Second <input id="hSuit2" type="color"></label>
+          <label>Third <input id="hSuit3" type="color"></label>
+          <label>Gloves <input id="hGloves" type="color"></label>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabMusic" class="tabBody hidden">
+      <div class="secHead"><span>ON TRACK</span></div>
+      <p class="small">Pick what plays while you drive: one, or a mix. More artists in the Shop.</p>
+      <div id="musicPicks"></div>
+    </div>
+
+    <!-- the hat and suit pickers: every one on your driver, tried on before you put it on -->
+    <div id="picker" class="picker hidden">
+      <div class="secHead"><span id="pkTitle">HATS</span><button class="mini" id="pkClose" type="button">Close</button></div>
+      <p class="small" id="pkNote">Pick one to try it on your driver. PUT ON keeps it.</p>
+      <div id="pkGrid" class="pkGrid"></div>
+      <div class="pkBtns"><button class="btn" id="pkCancel" type="button">CANCEL</button><button class="btn primary" id="pkWear" type="button">PUT ON</button></div>
+    </div>
+
+    <button class="btn primary" id="garagePlay" disabled>PLAY</button>
+  </aside>
+</section>
+
+<!-- ============================================================ FASTEST DRIVERS -->
+<section id="pgBoard" class="page ui hidden">
+  <header class="pageHead"><button class="back" data-go="home">‹ Back</button><h2>FASTEST DRIVERS</h2></header>
+  <div class="sheet">
+    <nav class="tabs" id="boardLayout"></nav>
+    <nav class="tabs" id="boardKart"></nav>
+    <nav class="tabs" id="boardDir"><button data-dir="cw" class="on">CLOCKWISE</button><button data-dir="ccw">COUNTER-CLOCKWISE</button></nav>
+    <div id="podiumWrap" class="podiumWrap hidden">
+      <canvas id="podium"></canvas>
+      <div id="podNames" class="podNames"></div>
+    </div>
+    <ol id="boardList" class="board"></ol>
+    <p class="small boardNote" id="boardNote">Top 10 valid laps of Tidal Turns, one per driver. Times are kept on this computer: everyone who drives here, under their own name from the Garage, is ranked together.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SETTINGS -->
+<section id="pgSettings" class="page ui hidden">
+  <header class="pageHead"><button class="back" data-go="home">‹ Back</button><h2>SETTINGS</h2></header>
+  <div class="sheet">
+    <div class="secHead"><span>AUDIO</span></div>
+    <div class="setRow"><span>Music</span><label class="chk"><input id="musicOn" type="checkbox"> On</label></div>
+    <div class="setRow"><span>Music volume</span><input id="musicVol" type="range" min="0" max="1" step="0.05"></div>
+    <div class="setRow"><span>Engine &amp; effects volume</span><input id="sfxVol" type="range" min="0" max="1" step="0.05"></div>
+
+    <div class="secHead"><span>DISPLAY</span></div>
+    <div class="setRow"><span>Graphics</span>
+      <select id="quality"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low (faster)</option></select></div>
+    <div class="setRow"><span>Time of day<small>Driving on your own; on a server the host picks</small></span><select id="timeOfDay"></select></div>
+    <div class="setRow"><span>Weather<small>Rain makes the track slippery: about a quarter less grip</small></span><select id="weather"></select></div>
+    <div class="setRow"><span>Speed</span>
+      <select id="units"><option value="mph">MPH</option><option value="kmh">km/h</option></select></div>
+    <div class="setRow"><span>Telemetry panel at start</span><label class="chk"><input id="telemetryOn" type="checkbox"> Show</label></div>
+
+    <div class="secHead"><span>CONTROLS</span></div>
+    <div class="setRow"><span id="padStatus">Keyboard</span><button class="mini" id="openInput">Set up wheel / controller…</button></div>
+    <div class="setRow"><span>Ghost lap<small>A see-through kart replays your best lap on this track, way round and kart, for you to chase (practice only)</small></span><label class="chk"><input id="ghostOn" type="checkbox"> On</label></div>
+    <div class="setRow"><span>Driving assists<small>Controller, keyboard and touch: the brake eases off just before the wheels lock, the gas just before they spin. Steering wheels never get them.</small></span><label class="chk"><input id="assistsOn" type="checkbox"> On</label></div>
+    <div class="controls">
+      <b>Keyboard</b> W/↑ throttle · S/↓ brake · A D/← → steer · F turn kart around · R reset to track · C camera · Esc back to menu · M mute · N music · T telemetry<br>
+      <b>Gamepad</b> left stick steer · RT throttle · LT brake · X turn around · B reset · Y camera · Start back to menu
+    </div>
+  </div>
+</section>
+
+<div id="inputCfg" class="overlay ui hidden">
+  <div class="card wide">
+    <h2>Wheel &amp; controller</h2>
+    <div id="cfgBody"></div>
+    <p class="small">Works with USB steering wheels and pedals (Logitech, Thrustmaster, Fanatec, Moza, …) and gamepads (Xbox, PlayStation, Switch Pro).
+      Browsers can't drive a wheel's force-feedback motor; gamepads get rumble in Chrome and Edge.</p>
+    <button class="btn primary" id="closeInput">DONE</button>
+  </div>
+</div>
+
+<div id="acctDlg" class="overlay ui hidden">
+  <div class="card">
+    <h2 id="acctTitle">Sign in</h2>
+    <p class="small" id="acctLead">Your account keeps your lap times on the worldwide Fastest Drivers board, and your driver, kart, paint and settings on any computer.</p>
+    <nav class="tabs" id="acctTabs"><button data-m="name" class="on">DRIVER NAME</button><button data-m="email">EMAIL</button></nav>
+    <form id="acctForm" class="formGrid" autocomplete="on">
+      <label class="wide" data-for="name">Driver name <input id="aName" type="text" maxlength="20" autocomplete="username" spellcheck="false"></label>
+      <label class="wide hidden" data-for="email">Email <input id="aEmail" type="email" autocomplete="email"></label>
+      <label class="wide" data-for="pw">Password <input id="aPw" type="password" minlength="6" autocomplete="current-password"></label>
+      <p class="small acctErr" id="acctErr"></p>
+      <button class="btn primary" type="submit" id="acctGo">SIGN IN</button>
+    </form>
+    <p class="small acctSwitch"><a href="#" id="acctMode">New here? Create an account</a></p>
+    <div class="acctOr"><span>or</span></div>
+    <button class="btn" id="acctGoogle">CONTINUE WITH GOOGLE</button>
+    <form id="acctRename" class="formGrid hidden">
+      <label class="wide">Pick your driver name (shown on Fastest Drivers) <input id="aNewName" type="text" maxlength="20" spellcheck="false"></label>
+      <p class="small acctErr" id="renameErr"></p>
+      <button class="btn primary" type="submit">SAVE NAME</button>
+    </form>
+    <p class="small"><a href="#" id="acctClose">Play without an account</a></p>
+  </div>
+</div>
+
+<div id="nowPlaying" class="hidden"><span class="np-icon">&#9835;</span><span><b id="npTitle"></b><small id="npArtist"></small></span></div>
+
+<div id="layoutPick" class="overlay ui hidden">
+  <div class="card wide">
+    <h2>Choose your track</h2>
+    <div id="layoutList"></div>
+    <button class="back" id="layoutBack">‹ Back</button>
+  </div>
+</div>
+
+<!-- in a server: Esc opens this -->
+<div id="pauseMenu" class="overlay ui hidden">
+  <div class="card pauseCard">
+    <h2>PAUSED</h2>
+    <button class="btn primary" id="pmResume">RESUME</button>
+    <button class="btn" id="pmPits">BACK TO THE PITS</button>
+    <button class="btn clubBtn" id="pmClub">GO TO THE CLUBHOUSE</button>
+    <button class="btn" id="pmQuit">QUIT TO MENU</button>
+    <p class="small">Esc to carry on driving</p>
+  </div>
+</div>
+
+<div id="roomPanel" class="overlay ui hidden">
+  <div class="card wide">
+    <h2 id="rpName">Server</h2>
+    <p class="small" id="rpTrack"></p>
+    <div id="rpCodeBox" class="rpCode"><span>CODE</span><b id="rpCode"></b><small id="rpCodeNote"></small></div>
+    <div class="setRow"><span>Voice chat<small id="rpVoiceNote"></small></span>
+      <span class="seg hidden" id="rpVoiceSeg"><button data-v="0" class="on">OFF</button><button data-v="1">ON</button></span></div>
+    <div class="secHead"><span>DRIVERS</span><span class="val" id="rpCount"></span></div>
+    <ul id="rpPlayers" class="rpPlayers"></ul>
+    <div id="rpHost">
+      <div class="secHead"><span>RACE SETTINGS</span><span class="val">You're the host</span></div>
+      <div class="setRow"><span>Track</span><select id="rpTrackSel"></select></div>
+      <div class="setRow"><span>Kart<small>Everyone in the same kart, or their own</small></span><span class="seg" id="rpKart"></span></div>
+      <div class="setRow"><span>Qualifying<small>Fastest lap sets the starting grid</small></span>
+        <span class="seg" id="rpQuali"><button data-v="0">OFF</button><button data-v="3">3 MIN</button><button data-v="5" class="on">5 MIN</button><button data-v="10">10 MIN</button><button data-v="15">15 MIN</button></span></div>
+      <div class="setRow"><span>Race<small>Laps from a standing start</small></span>
+        <span class="seg" id="rpLaps"><button data-v="3">3</button><button data-v="5" class="on">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button></span></div>
+      <div class="setRow" id="rpStewardRow"><span>Steward<small id="rpStewardNote">Leave your kart and watch every driver on the cameras</small></span>
+        <span class="seg" id="rpSteward"><button data-v="0" class="on">DRIVE</button><button data-v="1">STEWARD</button></span></div>
+      <div class="setRow" id="rpAiRow"><span>AI drivers<small id="rpAiNote">Computer drivers race with everyone: up to 11 drivers in all</small></span>
+        <span class="seg" id="rpAi"><button data-v="-1">− REMOVE</button><button data-v="1">+ ADD</button></span></div>
+      <div class="setRow" id="rpAiLevelRow"><span>AI difficulty</span>
+        <span class="seg" id="rpAiLevel"><button data-v="easy">EASY</button><button data-v="medium" class="on">MEDIUM</button><button data-v="hard">HARD</button></span></div>
+      <div class="setRow" id="rpCondRow"><span>Conditions<small>Time of day and weather for everyone</small></span>
+        <span><select id="rpTime"></select> <select id="rpWeather"></select></span></div>
+      <div class="setRow" id="rpChampRow"><span>Championship<small id="rpChampNote">Points for every race: 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, and 1 for the fastest lap</small></span>
+        <span class="seg" id="rpChamp"><button data-v="0" class="on">OFF</button><button data-v="1">ON</button><button data-v="reset">RESET</button></span></div>
+      <div id="rpChampTable" class="champ hidden"></div>
+      <div class="setRow" id="rpFlagRow"><span>Flag<small id="rpFlagNote">The flag the steward waves. Auto: green, white on the last lap, chequered at the finish</small></span>
+        <span class="seg flagBtns" id="rpFlag"><button data-v="auto" class="on">AUTO</button><button data-v="green"><i></i>GREEN</button><button data-v="yellow"><i></i>YELLOW</button><button data-v="red"><i></i>RED</button><button data-v="white"><i></i>WHITE</button><button data-v="chequered"><i></i>CHEQ</button></span></div>
+      <button class="btn primary" id="rpStart">START QUALIFYING</button>
+      <button class="btn hidden" id="rpEnd">END SESSION</button>
+      <button class="btn hidden" id="rpClose">CLOSE SERVER (ADMIN)</button>
+    </div>
+    <p class="small" id="rpWait"></p>
+    <div class="rpBtns">
+      <button class="btn" id="rpResume">RESUME</button>
+      <button class="btn clubBtn" id="rpClub">GO TO THE CLUBHOUSE</button>
+      <button class="btn" id="rpLeave">LEAVE SERVER</button>
+    </div>
+  </div>
+</div>
+
+<div id="raceResults" class="overlay ui hidden">
+  <div class="card wide">
+    <div class="resHead"><small id="rrKicker">CLASSIFICATION</small><h2 id="rrTitle">RACE RESULTS</h2><p class="small" id="rrTrack"></p></div>
+    <div class="resTable">
+      <div class="resRow head"><span>POS</span><span>DRIVER</span><span>GRID</span><span>BEST LAP</span><span>TIME</span></div>
+      <div id="rrList"></div>
+    </div>
+    <div id="rrChamp" class="champ hidden"></div>
+    <button class="btn primary" id="rrClose">BACK TO PRACTICE</button>
+  </div>
+</div>
+
+<div id="fade"></div>
+
+<script src="vendor/supabase/supabase.js"></script>
+<script type="module" src="src/main.js"></script>
+<!-- phones held upright while driving -->
+<div id="rotate"><div><b>TURN YOUR PHONE SIDEWAYS</b><small>The track needs the whole width of the screen.</small></div></div>
+</body>
+</html>

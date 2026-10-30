@@ -1,0 +1,15 @@
+Ambience recordings, all CC0 (public domain), from OpenGameArt.org.
+Trimmed to seamless mono loops and levelled for the game.
+
+birds.mp3     "park ambiences" (park_ambience_birds.wav), 1:00-2:30
+              https://opengameart.org/content/park-ambiences
+wind.mp3      "park ambiences" (park_ambience_wind.wav), 1:25-2:35
+              https://opengameart.org/content/park-ambiences
+crickets.mp3  "Crickets ambient noise (loopable)"
+              https://opengameart.org/node/130090
+
+Rain and the other karts' engines are synthesised (src/ambience.js).
+
+crowd.mp3     "Outside Talks 4" (#3094) by Joseph Sardin, BigSoundBank / LaSonotheque, CC0
+              https://bigsoundbank.com/outside-talks-4-s3094.html
+              (muffled and levelled into a quiet background murmur)
